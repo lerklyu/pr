@@ -7,8 +7,6 @@ import org.example.converter.DefaultConverter;
 import org.example.working_with_file.JsonFIleRatesGetter;
 import org.example.working_with_file.RatesGetter;
 
-import java.io.FileNotFoundException;
-
 public class App {
 
     private UserInterface userInterface;
@@ -21,25 +19,27 @@ public class App {
         this.converter = converter;
     }
 
-    void mainLogic() throws FileNotFoundException {
+    void mainLogic() {
         while (true) {
-            userInterface.showToUser("Добро пожаловать! " +
-                    "Сначала введите СУММУ для конвертации (В РУБЛЯХ), " +
-                    "затем КОД ВАЛЮТЫ: ");
-            converter.convert();
+            try {
+                userInterface.showToUser("Сумма для конвертации: ");
+                double amountToConvert = Double.parseDouble(userInterface.getFromUser());
+                userInterface.showToUser("Код валюты для конвертации: ");
+                String codeCurrency = userInterface.getFromUser();
+                double exchangeRateByCurrency = ratesGetter.getExchangeRates(codeCurrency);
+                double conversionResult = converter.convert(amountToConvert, exchangeRateByCurrency);
+                userInterface.showToUser("Эквивалент: " + String.format("%.2f", conversionResult));
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
         }
     }
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) {
 
         UserInterface userInterface = new ConsoleUserInterface();
-
-        RatesGetter ratesGetter = new JsonFIleRatesGetter(
-                (ConsoleUserInterface) userInterface);
-
-        Converter converter = new DefaultConverter(
-                (ConsoleUserInterface) userInterface,
-                (JsonFIleRatesGetter) ratesGetter);
+        RatesGetter ratesGetter = new JsonFIleRatesGetter();
+        Converter converter = new DefaultConverter();
 
         App app = new App(
                 userInterface,

@@ -2,34 +2,32 @@ package org.example.working_with_file;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.example.communication_with_users.ConsoleUserInterface;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 public class JsonFIleRatesGetter implements RatesGetter {
-    private ConsoleUserInterface consoleuserInterface;
-
-    public JsonFIleRatesGetter(ConsoleUserInterface consoleuserInterface) {
-        this.consoleuserInterface = consoleuserInterface;
-    }
 
     @Override
-    public double getExchangeRates() throws FileNotFoundException {
+    public double getExchangeRates(String acceptedCodeCurrency) throws IOException {
         Map<String, Double> mapRates;
         Gson gson = new Gson();
         Type type = new TypeToken<Map<String, Double>>() {
         }.getType();
-        FileReader fileReader = new FileReader("src/main/resources/exchangeRate.json");
-        mapRates = gson.fromJson(fileReader, type);
-        String codeCurrency = consoleuserInterface.getFromUser();
+        Path filePath = Paths.get("src/main/resources/exchangeRate.json");
+        String jsonContent = Files.readString(filePath, StandardCharsets.UTF_8);
+        mapRates = gson.fromJson(jsonContent, type);
         for (Map.Entry<String, Double> entry : mapRates.entrySet()) {
-            if (codeCurrency.equals(entry.getKey())) {
+            if (acceptedCodeCurrency.equals(entry.getKey())) {
                 return entry.getValue();
             }
         }
-        return mapRates.get(codeCurrency);
+        return mapRates.get(acceptedCodeCurrency);
     }
 }
 

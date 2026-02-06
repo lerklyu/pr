@@ -1,8 +1,7 @@
 package org.example.working_with_file;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public interface RatesGetter {
-    double getExchangeRates() throws FileNotFoundException;
-
+    double getExchangeRates(String acceptedCodeCurrency) throws IOException;
 }
