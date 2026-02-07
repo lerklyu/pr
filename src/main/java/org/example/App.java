@@ -1,18 +1,22 @@
 package org.example;
 
-import org.example.communication_with_users.ConsoleUserInterface;
-import org.example.communication_with_users.UserInterface;
+import org.example.userinterface.ConsoleUserInterface;
+import org.example.userinterface.UserInterface;
 import org.example.converter.Converter;
 import org.example.converter.DefaultConverter;
-import org.example.working_with_file.JsonFIleRatesGetter;
-import org.example.working_with_file.RatesGetter;
+import org.example.ratesgetter.JsonFIleRatesGetter;
+import org.example.ratesgetter.RatesGetter;
+
+import java.nio.file.Path;
+
+import static java.lang.Double.*;
 
 public class App {
 
     private UserInterface userInterface;
     private RatesGetter ratesGetter;
     private Converter converter;
-
+    
     public App(UserInterface userInterface, RatesGetter ratesGetter, Converter converter) {
         this.userInterface = userInterface;
         this.ratesGetter = ratesGetter;
@@ -20,25 +24,33 @@ public class App {
     }
 
     void mainLogic() {
+        double amountToConvert;
+        double exchangeRateByCurrency;
         while (true) {
+            userInterface.showToUser("Сумма для конвертации: ");
             try {
-                userInterface.showToUser("Сумма для конвертации: ");
-                double amountToConvert = Double.parseDouble(userInterface.getFromUser());
-                userInterface.showToUser("Код валюты для конвертации: ");
-                String codeCurrency = userInterface.getFromUser();
-                double exchangeRateByCurrency = ratesGetter.getExchangeRates(codeCurrency);
-                double conversionResult = converter.convert(amountToConvert, exchangeRateByCurrency);
-                userInterface.showToUser("Эквивалент: " + String.format("%.2f", conversionResult));
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
+                amountToConvert = parseDouble(userInterface.getFromUser());
+            } catch (RuntimeException e) {
+                System.out.println("Неправильный формат числа");
+                continue;
             }
+            userInterface.showToUser("Код валюты для конвертации: ");
+            String codeCurrency = userInterface.getFromUser();
+            try {
+                exchangeRateByCurrency = ratesGetter.getExchangeRates(codeCurrency);
+            } catch (RuntimeException e) {
+                System.out.println("Неправильный формат кода валюты");
+                continue;
+            }
+            double conversionResult = converter.convert(amountToConvert, exchangeRateByCurrency);
+            userInterface.showToUser("Эквивалент: " + String.format("%.2f", conversionResult));
         }
     }
 
     public static void main(String[] args) {
 
         UserInterface userInterface = new ConsoleUserInterface();
-        RatesGetter ratesGetter = new JsonFIleRatesGetter();
+        RatesGetter ratesGetter = new JsonFIleRatesGetter(Path.of("src/main/resources/exchangeRate.json"));
         Converter converter = new DefaultConverter();
 
         App app = new App(
@@ -48,5 +60,4 @@ public class App {
 
         app.mainLogic();
     }
-
 }

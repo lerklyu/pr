@@ -1,10 +1,14 @@
-package org.example.communication_with_users;
+package org.example.userinterface;
 
 import java.util.Scanner;
 
 public class ConsoleUserInterface implements UserInterface {
 
-    Scanner scanner = new Scanner(System.in);
+    private Scanner scanner;
+
+    public ConsoleUserInterface() {
+        this.scanner = new Scanner(System.in);
+    }
 
     @Override
     public void showToUser(String text) {
